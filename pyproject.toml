@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "issue_expander"
+description = "Expand GitHub issue references into Markdown links"
+version = "0.1.0"
+authors = [
+    {name = "Adam Wolf", email = "adamwolf@feelslikeburning.com"},
+    ]
+readme = "dynamic"
+classifiers = [
+    "Private :: Do Not Upload",
+    ]
+requires-python = ">=3.6"
+dependencies = [
+    "Click",
+    "requests",
+    ]
+
+[tool.setuptools.dynamic]
+readme = {file = "README.md", content_type = "text/markdown"}
+
+[project.scripts]
+issue_expander = "issue_expander:cli"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[too.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 108
+
+# flake8 config is in tox.ini, as it can't yet be here
