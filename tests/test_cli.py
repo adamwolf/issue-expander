@@ -1,14 +1,16 @@
+"""
+Use the CLI directly for some high-level integration tests.
+"""
+
 import responses
 from click.testing import CliRunner
 
 from issue_expander.issue_expander import cli
 
-# mock out the requests.get() call
-
 
 @responses.activate
 def test_file():
-    """Test that the CLI works with a file"""
+    """Use a file as input."""
     responses.get(
         "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
         json={
@@ -29,7 +31,7 @@ def test_file():
 
 @responses.activate
 def test_stdin():
-    """Test that we read from stdin if given - as the input file"""
+    """Read input from stdin if given - as the input file."""
     responses.get(
         "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
         json={
@@ -46,7 +48,7 @@ def test_stdin():
 
 @responses.activate
 def test_default_source():
-    """Test that we can use a default group/repository"""
+    """Use a default group/repository when specified as an option."""
     responses.get(
         "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
         json={
@@ -63,7 +65,7 @@ def test_default_source():
 
 @responses.activate
 def test_default_source_but_not_needed():
-    """Test that we don't use a default group/repository if one is specified in the input"""
+    """Don't override a specified group/repository even if a default is specified"""
     responses.get(
         "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
         json={
@@ -100,7 +102,7 @@ def test_default_source_but_not_needed():
 
 @responses.activate
 def test_multiline_expansions_over_stdin():
-    """Test that we can expand issues on multiple lines"""
+    """Expand issues on each line when given multiple lines through stdin"""
     responses.get(
         "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
         json={
@@ -128,7 +130,7 @@ def test_multiline_expansions_over_stdin():
 
 @responses.activate
 def test_multiline_expansions_over_file():
-    """Test that we can expand issues on multiple lines"""
+    """Expand issues on each line when given multiple lines in a file"""
     responses.get(
         "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
         json={
