@@ -56,4 +56,10 @@ source = ["issue_expander"]
 [tool.coverage.paths]
 source = ["src", ".tox/py*/**/site-packages"]
 
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+skip_covered = true
+
+
 # flake8 config is in tox.ini, as it can't yet be here
