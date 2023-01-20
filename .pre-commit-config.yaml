@@ -21,7 +21,15 @@ repos:
     hooks:
       - id: interrogate
         args: [--ignore-module, --fail-under=100, --whitelist-regex, "test_.*", tests]
-
+  - repo: local
+    hooks:
+      - id: cogcheck
+        name: cog --check
+        additional_dependencies: [tox]
+        entry: tox
+        args: [run, -q, -e, cogcheck]
+        language: python
+        pass_filenames: false
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
