@@ -42,10 +42,18 @@ issue_expander = "issue_expander:cli"
 [tool.setuptools]
 package-dir = {"" = "src"}
 
-[too.setuptools.packages.find]
+[tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.black]
 line-length = 108
+
+[tool.coverage.run]
+parallel = true
+branch = true
+source = ["issue_expander"]
+
+[tool.coverage.paths]
+source = ["src", ".tox/py*/**/site-packages"]
 
 # flake8 config is in tox.ini, as it can't yet be here
