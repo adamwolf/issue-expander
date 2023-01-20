@@ -68,12 +68,13 @@ def validate_token(ctx, param, value):
 @click.option(
     "--default-source",
     metavar="USER/REPO",
-    help="Use default when not specified in the issue reference, formatted like '\"adamwolf/issue-expander\".'",
+    help='Use USER/REPO when not specified in issue reference. (Example: "adamwolf/issue-expander")',
 )
 @click.option(
     "-u",
     "--github-username",
     envvar="ISSUE_EXPANDER_GITHUB_USERNAME",
+    metavar="USERNAME",
     help="GitHub username for looking up issue references. You can use the environment variable "
     "ISSUE_EXPANDER_GITHUB_USERNAME.",
 )
@@ -81,17 +82,28 @@ def validate_token(ctx, param, value):
     "-p",
     "--github-token",
     envvar="ISSUE_EXPANDER_GITHUB_TOKEN",
+    metavar="TOKEN",
     help="GitHub token for looking up issue references. You may want to use the environment variable "
     "ISSUE_EXPANDER_GITHUB_TOKEN instead.",
     callback=validate_token,
 )
 @click.version_option()
-@click.argument("input", type=click.File("r"))
+@click.argument("input", metavar="FILE", type=click.File("r"))
 def cli(input, github_username=None, github_token=None, default_source=None):
-    """Use the GitHub API to turn issue references, like "rust-lang/rust#106827", into Markdown links, like
+    """Turn references like "foo/bar#123" into Markdown links, like
 
-    "[Update LLVM to 15.0.7 #106827](https://github.com/rust-lang/rust/pull/106827)"
+    "[Prevent side fumbling #123](https://github.com/foo/bar/pull/123)"
+
+    issue-expander works for references to issues and to pull requests.
+
+    References are only expanded if they are found at GitHub.  To expand references from private
+    repositories, you'll need to pass your GitHub username and token.  This can be done via
+    environment variables or via command line options.
+
+    To interpret references like `#1138` as `adamwolf/issue-expander#1138`,
+    specify defaults using `--default-source`.
     """
+
     out = []
 
     default_group = None
