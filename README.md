@@ -1,6 +1,6 @@
 # issue-expander
 
-Expand GitHub issue references into Markdown links.
+Expand GitHub issue references into Markdown links
 
 ```
 $ echo 'rust-lang/rust#106827' | issue-expander -
@@ -14,7 +14,6 @@ This project is not yet stable in any way and makes absolutely no guarantees abo
 (between releases, or otherwise).
 
 ## Usage
-
 
 <!-- [[[cog
 import cog
@@ -59,3 +58,22 @@ Options:
 
 ```
 <!-- [[[end]]] -->
+
+## Installation
+
+If you use Homebrew, you can install issue-expander like this:
+
+```
+brew tap adamwolf/issue-expander
+brew install issue-expander
+```
+
+Otherwise, I recommend installing with [pipx](https://pypa.github.io/pipx/). Once you've got pipx installed, you can install issue-expander like this:
+
+```
+pipx install issue-expander
+```
+
+and it installs into its own little area, won't mess with anything else on your system or with dependencies, and it just installs for you (it doesn't need any special permissions).
+
+If you want to do something different, issue-expander is available on PyPI. Go hogwild.
