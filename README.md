@@ -74,6 +74,6 @@ Otherwise, I recommend installing with [pipx](https://pypa.github.io/pipx/). Onc
 pipx install issue-expander
 ```
 
-and it installs into its own little area, won't mess with anything else on your system or with dependencies, and it just installs for you (it doesn't need any special permissions).
+and pipx installs issue-expander into its own little area, just for you, where you don't have to worry about it messing with any system-wide or even user-wide Python dependencies.
 
 If you want to do something different, issue-expander is available on PyPI. Go hogwild.
