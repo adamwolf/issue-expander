@@ -178,9 +178,19 @@ def test_multiline_expansions_over_file():
         assert result.exit_code == 0
 
 
-# def test_version():
-#     """Test that we can print the version"""
-#     runner = CliRunner()
-#     result = runner.invoke(cli, ["--version"])
-#     assert result.output == "geewhiz version "
-#     assert result.exit_code == 0
+def test_version():
+    """Test that we can print the version"""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--version"])
+    assert result.output == "cli, version 0.1.10.dev0\n"
+    assert result.exit_code == 0
+
+
+def test_help():
+    """Test that we can print the help"""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--help"])
+    assert result.exit_code == 0
+    assert "Usage:" in result.output
+    assert "Options:" in result.output
+    assert 'Turn references like "foo/bar#123" into Markdown links' in result.output
