@@ -1,6 +1,8 @@
 # issue-expander
 
-Expand GitHub issue references into Markdown links
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/adamwolf/4537e853375d0289662b6c7741571cb0/raw/covbadge.json)
+
+*Expand GitHub issue references into Markdown links*
 
 ```
 $ echo 'rust-lang/rust#106827' | issue-expander -
