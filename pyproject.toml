@@ -61,6 +61,11 @@ source = ["src", ".tox/py*/**/site-packages"]
 [tool.coverage.report]
 show_missing = true
 skip_empty = true
-skip_covered = true
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+pythonpath = "src"
 
 # flake8 config is in tox.ini, as it can't yet be here
