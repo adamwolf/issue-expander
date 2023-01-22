@@ -56,7 +56,7 @@ jobs:
           if-no-files-found: ignore
 
   coverage:
-    name: Combine & check coverage.
+    name: Combine & check coverage
     runs-on: ubuntu-latest
     needs: tests
 
@@ -64,7 +64,7 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@v2
         with:
-          egress-policy: block
+          egress-policy: audit
           allowed-endpoints: >
             files.pythonhosted.org:443
             github.com:443
@@ -84,14 +84,41 @@ jobs:
       - name: Combine coverage
         run: |
           python -m coverage combine
-          python -m coverage html --skip-covered --skip-empty
+          python -m coverage html --skip-empty
           # Report and write to summary.
           python -m coverage report | sed 's/^/    /' >> $GITHUB_STEP_SUMMARY
+          python -m coverage json
       - name: Upload HTML report
         uses: actions/upload-artifact@v3
         with:
           name: html-report
           path: htmlcov
+      - name: Upload JSON report
+        uses: actions/upload-artifact@v3
+        with:
+          name: json-report
+          path: coverage.json
+
+      - name: Prep badge
+        if: (github.repository == 'adamwolf/issue-expander') && (github.ref == 'refs/heads/main')
+        run: |
+          export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "total=$TOTAL" >> $GITHUB_ENV
+
+      # See https://nedbatchelder.com/blog/202209/making_a_coverage_badge.html
+      - name: Make coverage badge
+        if: (github.repository == 'adamwolf/issue-expander') && (github.ref == 'refs/heads/main')
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          # GIST_TOKEN is a GitHub personal access token with scope "gist".
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 4537e853375d0289662b6c7741571cb0
+          filename: covbadge.json
+          label: Coverage
+          message: ${{ env.total }}%
+          minColorRange: 50
+          maxColorRange: 90
+          valColorRange: ${{ env.total }}
 
   install-dev:
     name: Verify dev env

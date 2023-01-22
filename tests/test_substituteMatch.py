@@ -1,7 +1,9 @@
 import re
 
 import responses
+
 from issue_expander.issue_expander import substituteMatch
+
 
 @responses.activate
 def test_substituteMatch_with_group_but_no_repo():
@@ -16,8 +18,6 @@ def test_substituteMatch_with_group_but_no_repo():
     # let's make sure we didn't call out at all
     rsp = responses.get(re.compile("http.*"))
 
-    assert substituteMatch(match, "defaultgroup", None, None, None) == (
-        "adamwolf/geewhiz#101"
-    )
+    assert substituteMatch(match, "defaultgroup", None, None, None) == ("adamwolf/geewhiz#101")
 
     assert rsp.call_count == 0
