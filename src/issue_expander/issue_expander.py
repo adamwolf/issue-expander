@@ -77,6 +77,7 @@ def expandRefsToMarkdown(
 def validate_token(ctx, param, value):
     if value and not ctx.params["github_username"]:
         raise click.UsageError("Cannot pass --github-token without --github-username")
+    return value
 
 
 @click.command()
