@@ -59,6 +59,23 @@ def test_404s_dont_expand():
 
 
 @responses.activate
+def test_gh_expansion():
+    """Expand GH-123 style references."""
+    responses.get(
+        "https://api.github.com/repos/adamwolf/geewhiz/issues/123",
+        json={
+            "html_url": "https://example.com/pulls/123",
+            "title": "Hoist the Mainsail!",
+        },
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--default-source", "adamwolf/geewhiz", "-"], input="GH-123")
+    assert result.output == "[Hoist the Mainsail! #123](https://example.com/pulls/123)"
+    assert result.exit_code == 0
+
+
+@responses.activate
 def test_default_source():
     """Use a default group/repository when specified as an option."""
     responses.get(
