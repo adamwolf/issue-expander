@@ -44,7 +44,7 @@ def substituteMatch(match, default_group, default_repository, username, token):
             title = issue["title"]
             # TODO do we need to escape [] or anything?
             return f"[{title} #{number}]({html_url})"
-    # if we didn't find an issue, return the original text so we don't change anything
+    # if we didn't find an issue, return the original text, so we don't change anything
     return match.group(0)
 
 
@@ -74,12 +74,6 @@ def expandRefsToMarkdown(
     return out
 
 
-def validate_token(ctx, param, value):
-    if value and not ctx.params["github_username"]:
-        raise click.UsageError("Cannot pass --github-token without --github-username")
-    return value
-
-
 @click.command()
 @click.option(
     "--default-source",
@@ -101,7 +95,6 @@ def validate_token(ctx, param, value):
     metavar="TOKEN",
     help="GitHub token for looking up issue references. You may want to use the environment variable "
     "ISSUE_EXPANDER_GITHUB_TOKEN instead.",
-    callback=validate_token,
 )
 @click.version_option()
 @click.argument("input", metavar="FILE", type=click.File("r"))
@@ -125,27 +118,18 @@ def cli(input, github_username=None, github_token=None, default_source=None):
     default_group = None
     default_repository = None
 
-    if default_source:
-        default_good = True
-        try:
-            default_group, default_repository = default_source.split("/")
-        except ValueError:
-            default_good = False
-        else:
-            if not default_group or not default_repository:
-                default_good = False
+    if default_source is not None:
+        # default_group, default_repository = default_source.split("/")
+        # get group/repository from default_source using a regex
+        match = re.fullmatch(r"(?P<group>[a-zA-Z0-9.-]+)/(?P<repository>[a-zA-Z0-9.-]+)", default_source)
+        if match:
+            default_group = match.group("group")
+            default_repository = match.group("repository")
 
-        if not default_good:
-            print(
-                "Error: default source must be in the format 'group/repository'",
-                file=sys.stderr,
-            )
+        if not (default_group and default_repository):
+            print("Error: default source must be in the format 'group/repository'", file=sys.stderr)
             sys.exit(1)
 
     for line in input:
         out = expandRefsToMarkdown(line, github_username, github_token, default_group, default_repository)
         print(out, end="")
-
-
-if __name__ == "__main__":
-    cli()

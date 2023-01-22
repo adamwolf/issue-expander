@@ -1,15 +1,12 @@
 """
 Use the CLI directly for some high-level integration tests.
 """
-
+import pytest
 import responses
 from click.testing import CliRunner
 from responses import matchers
 
 from issue_expander.issue_expander import cli
-
-# TODO test username implies token
-# TODO test token implies username
 
 
 @responses.activate
@@ -76,6 +73,29 @@ def test_default_source():
     result = runner.invoke(cli, ["--default-source", "adamwolf/geewhiz", "-"], input="#101")
     assert result.output == "[Foobar the Frobnitz #101](https://example.com/pulls/106970)"
     assert result.exit_code == 0
+
+
+bad_default_sources = [
+    "",
+    "https://www.google.com",
+    "      adamwolf/geewhiz",
+    "adamwolf     /      geewhiz",
+    "adamwolf",
+    "adamwolf/",
+    "/geewhiz",
+    "adamwolf/geewhiz/",
+    "adamwolf//geewhiz",
+    "/" "//" "a/b/c" " hello world" "01189998819991197253",
+]
+
+
+@pytest.mark.parametrize("source", bad_default_sources)
+def test_malformed_default_sources(source):
+    """Malformed default sources are rejected with a usage error."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--default-source", source, "-"], input="#101")
+    assert result.exit_code == 1
+    assert "Error: default source must be in the format 'group/repository'\n" in result.output
 
 
 @responses.activate
