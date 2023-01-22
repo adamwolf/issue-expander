@@ -4,6 +4,7 @@ Use the CLI directly for some high-level integration tests.
 
 import responses
 from click.testing import CliRunner
+from responses import matchers
 
 from issue_expander.issue_expander import cli
 
@@ -48,18 +49,17 @@ def test_stdin():
     assert result.output == "[Foobar the Frobnitz #101](https://example.com/pulls/106970)"
     assert result.exit_code == 0
 
+
 @responses.activate
 def test_404s_dont_expand():
     """If something looks like an issue reference, but GitHub 404s, don't expand it."""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
-        status = 404
-    )
+    responses.get("https://api.github.com/repos/adamwolf/geewhiz/issues/101", status=404)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["-"], input="adamwolf/geewhiz#101")
     assert result.output == "adamwolf/geewhiz#101"
     assert result.exit_code == 0
+
 
 @responses.activate
 def test_default_source():
@@ -114,7 +114,8 @@ def test_two_expansions_in_one_line():
     runner = CliRunner()
     result = runner.invoke(cli, ["-"], input="adamwolf/geewhiz#101 adamwolf/geewhiz#102")
     assert result.output == (
-        "[Foobar the Frobnitz #101](https://example.com/pulls/101) [HOTFIX: fix the frobnitz! #102](https://example.com/pulls/102)"
+        "[Foobar the Frobnitz #101](https://example.com/pulls/101) "
+        "[HOTFIX: fix the frobnitz! #102](https://example.com/pulls/102)"
     )
 
 
@@ -179,7 +180,7 @@ def test_multiline_expansions_over_file():
 
 
 def test_version():
-    """Test that we can print the version"""
+    """--version prints the version"""
     runner = CliRunner()
     result = runner.invoke(cli, ["--version"])
     assert result.output == "cli, version 0.1.10.dev0\n"
@@ -187,10 +188,32 @@ def test_version():
 
 
 def test_help():
-    """Test that we can print the help"""
+    """--help prints a helpful message"""
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])
     assert result.exit_code == 0
     assert "Usage:" in result.output
     assert "Options:" in result.output
     assert 'Turn references like "foo/bar#123" into Markdown links' in result.output
+
+
+@responses.activate
+def test_cli_auth():
+    """Credentials can be passed on the command line"""
+    responses.get(
+        "https://api.github.com/repos/foo/privaterepo/issues/555",
+        json={
+            "html_url": "https://example.com/pulls/555",
+            "title": "Sshhh!",
+        },
+        match=[matchers.header_matcher({"Authorization": "Basic am9obmRvZTpwYXNzd29yZDE="})],
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        ["--github-username", "johndoe", "--github-token", "password1", "-"],
+        input="foo/privaterepo#555",
+    )
+    assert result.output == "[Sshhh! #555](https://example.com/pulls/555)"
+    assert result.exit_code == 0
