@@ -1,5 +1,6 @@
 import re
 import sys
+from functools import partial
 
 import click
 import requests
@@ -11,10 +12,7 @@ regexes = [
 ]
 
 
-def getIssue(group: str, repository: str, number: object, username: object, token: object) -> [dict]:
-    if not group or not repository or not number:
-        return None
-
+def getIssue(group: str, repository: str, number: int, username: [str], token: [str]) -> [dict]:
     # What to do with bad credentials?
 
     url = f"https://api.github.com/repos/{group}/{repository}/issues/{number}"
@@ -29,6 +27,27 @@ def getIssue(group: str, repository: str, number: object, username: object, toke
         return req.json()
 
 
+def substituteMatch(match, default_group, default_repository, username, token):
+    if "group" in match.groupdict() and "repository" in match.groupdict():
+        group = match.group("group")
+        repository = match.group("repository")
+    else:
+        group = default_group
+        repository = default_repository
+
+    number = match.group("number")
+
+    if group and repository:
+        issue = getIssue(group, repository, number, username, token)
+        if issue:
+            html_url = issue["html_url"]
+            title = issue["title"]
+            # TODO do we need to escape [] or anything?
+            return f"[{title} #{number}]({html_url})"
+    # if we didn't find an issue, return the original text so we don't change anything
+    return match.group(0)
+
+
 def expandRefsToMarkdown(
     text: str,
     username: object = None,
@@ -36,26 +55,22 @@ def expandRefsToMarkdown(
     default_group: object = None,
     default_repository: object = None,
 ) -> str:
+
+    substituter = partial(
+        substituteMatch,
+        default_group=default_group,
+        default_repository=default_repository,
+        username=username,
+        token=token,
+    )
+    # now substituter can be called with just one argument, the match
+
     out = text
+    # make all the substitutions for this regex at one time,
+    # then check that output string with the next regex
 
     for regex in regexes:
-        for match in re.finditer(regex, out):
-            if "group" in match.groupdict() and "repository" in match.groupdict():
-                group = match.group("group")
-                repository = match.group("repository")
-            else:
-                group = default_group
-                repository = default_repository
-
-            number = match.group("number")
-
-            if group and repository:
-                issue = getIssue(group, repository, number, username, token)
-                if issue:
-                    html_url = issue["html_url"]
-                    title = issue["title"]
-                    # Replace just the match with the markdown expansion
-                    out = out[: match.start()] + f"[{title} #{number}]({html_url})" + out[match.end() :]
+        out = re.sub(regex, substituter, out)
     return out
 
 
