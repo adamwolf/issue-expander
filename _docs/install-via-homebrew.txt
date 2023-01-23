@@ -1,0 +1,2 @@
+brew tap adamwolf/issue-expander
+brew install issue-expander

@@ -120,12 +120,9 @@ jobs:
           maxColorRange: 90
           valColorRange: ${{ env.total }}
 
-  install-dev:
-    name: Verify dev env
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+  homebrew-install:
+    name: Check Homebrew install docs
+    runs-on: macos-latest
 
     steps:
       - name: Harden Runner
@@ -140,5 +137,112 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{env.PYTHON_LATEST}}
-      - run: python -m pip install -e .
-      - run: python -c 'import issue_expander'
+      - run: sh _docs/install-via-homebrew.txt
+      - run: |
+          OUTPUT=$(echo "adamwolf/issue-expander#14" | issue-expander -)
+          if [ "$OUTPUT" -ne '[Add instructions for developers #14](https://github.com/adamwolf/issue-expander/issues/14)' ]; then
+            exit 1
+          fi
+
+  preinstalled-pipx-install:
+    name: Check pipx install docs
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-latest ]
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{env.PYTHON_LATEST}}
+      - run: sh _docs/install-via-pipx.txt
+      - run: |
+          OUTPUT=$(echo "adamwolf/issue-expander#14" | issue-expander -)
+          if [ "$OUTPUT" -ne '[Add instructions for developers #14](https://github.com/adamwolf/issue-expander/issues/14)' ]; then
+            exit 1
+          fi
+
+
+  install-pipx-install:
+    name: Check pipx install docs
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{env.PYTHON_LATEST}}
+      - run: |
+          python3 -m pip install --user pipx
+          python3 -m pipx ensurepath
+      - run: sh _docs/install-via-pipx.txt
+      - run: |
+          OUTPUT=$(echo "adamwolf/issue-expander#14" | issue-expander -)
+          if [ "$OUTPUT" -ne '[Add instructions for developers #14](https://github.com/adamwolf/issue-expander/issues/14)' ]; then
+            exit 1
+          fi
+
+  install-dev-instructions:
+    name: Check dev env docs
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{env.PYTHON_LATEST}}
+      - run: |
+          mkdir -p tmptmp
+          cd tmptmp
+          bash -x ../_docs/devclone.txt
+          cd issue-expander
+          git checkout devenv
+      - run: |
+          cd tmptmp/
+          bash -x  ../_docs/devvenv.txt
+      - run: |
+          cd tmptmp/issue-expander; source venv/bin/activate
+          bash -x ../../_docs/devinstall.txt
+      - run: |
+          cd tmptmp/issue-expander ; source venv/bin/activate
+          bash -x ../../_docs/devtest.txt
+      - run: |
+          cd tmptmp/issue-expander; source venv/bin/activate
+          OUTPUT=$(echo "adamwolf/issue-expander#14" | issue-expander -)
+          if [ "$OUTPUT" -ne '[Add instructions for developers #14](https://github.com/adamwolf/issue-expander/issues/14)' ]; then
+            exit 1
+          fi
+      - run: | # make sure we can import it
+          cd tmptmp/issue-expander; source venv/bin/activate
+          python -c 'import issue_expander'
