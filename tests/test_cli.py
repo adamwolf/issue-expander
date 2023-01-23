@@ -64,13 +64,47 @@ def test_gh_expansion():
     responses.get(
         "https://api.github.com/repos/adamwolf/geewhiz/issues/123",
         json={
-            "html_url": "https://example.com/pulls/123",
+            "html_url": "https://example.com/pull/123",
             "title": "Hoist the Mainsail!",
         },
     )
 
     runner = CliRunner()
     result = runner.invoke(cli, ["--default-source", "adamwolf/geewhiz", "-"], input="GH-123")
+    assert result.output == "[Hoist the Mainsail! #123](https://example.com/pull/123)"
+    assert result.exit_code == 0
+
+
+@responses.activate
+def test_url_expansion():
+    """Expand url references."""
+    responses.get(
+        "https://api.github.com/repos/adamwolf/geewhiz/issues/123",
+        json={
+            "html_url": "https://example.com/pull/123",
+            "title": "Hoist the Mainsail!",
+        },
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ["-"], input="https://github.com/adamwolf/geewhiz/pull/123")
+    assert result.output == "[Hoist the Mainsail! #123](https://example.com/pull/123)"
+    assert result.exit_code == 0
+
+
+@responses.activate
+def test_url_expansion_with_mismatched_urls():
+    """Expand url references when the url is for an issue and the item is a PR."""
+    responses.get(
+        "https://api.github.com/repos/adamwolf/geewhiz/issues/123",
+        json={
+            "html_url": "https://example.com/pulls/123",
+            "title": "Hoist the Mainsail!",
+        },
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ["-"], input="https://github.com/adamwolf/geewhiz/issues/123")
     assert result.output == "[Hoist the Mainsail! #123](https://example.com/pulls/123)"
     assert result.exit_code == 0
 

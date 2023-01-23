@@ -10,6 +10,8 @@ regexes = [
     r"(?<![a-zA-Z0-9#])#(?P<number>\d+)(?![a-zA-Z0-9#])",  # like #123
     r"\bGH-(?P<number>\d+)",  # like GH-123
     r"(?P<group>[a-zA-Z0-9.-]+)/(?P<repository>[a-zA-Z0-9.-]+)#(?P<number>\d+)",  # like foo/bar#123
+    r"https://github.com/(?P<group>[a-zA-Z0-9.-]+)/(?P<repository>[a-zA-Z0-9.-]+)/(issues|pull)/(?P<number>\d+)",
+    # like https://github.com/foo/bar/issues/123
 ]
 
 
