@@ -227,7 +227,6 @@ jobs:
           cd tmptmp
           bash -x ../_docs/devclone.txt
           cd issue-expander
-          git checkout devenv
       - run: |
           cd tmptmp/
           bash -x  ../_docs/devvenv.txt
