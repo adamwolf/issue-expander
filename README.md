@@ -1,8 +1,9 @@
 # issue-expander
 
-![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/adamwolf/4537e853375d0289662b6c7741571cb0/raw/covbadge.json)
-
 *Expand GitHub issue references into Markdown links*
+
+[![PyPI](https://img.shields.io/pypi/v/issue-expander?color=green&logo=python&logoColor=white)](https://pypi.org/project/issue-expander/)
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/adamwolf/4537e853375d0289662b6c7741571cb0/raw/covbadge.json)
 
 ```
 $ echo 'rust-lang/rust#106827' | issue-expander -
