@@ -1,6 +1,6 @@
 import re
 import sys
-from functools import partial
+from functools import lru_cache, partial
 
 import click
 import requests
@@ -15,6 +15,7 @@ regexes = [
 ]
 
 
+@lru_cache()
 def getIssue(group: str, repository: str, number: int, username: [str], token: [str]) -> [dict]:
     # What to do with bad credentials?
 
