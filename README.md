@@ -65,18 +65,120 @@ Options:
 ## Installation
 
 If you use Homebrew, you can install issue-expander like this:
-
+<!-- [[[cog
+import cog
+with open("_docs/install-via-homebrew.txt") as f:
+    cog.out("```\n")
+    for line in f:
+        cog.out(line)
+    cog.out("```\n")
+]]] -->
 ```
 brew tap adamwolf/issue-expander
 brew install issue-expander
 ```
+<!-- [[[end]]] -->
 
 Otherwise, I recommend installing with [pipx](https://pypa.github.io/pipx/). Once you've got pipx installed, you can install issue-expander like this:
 
+<!-- [[[cog
+import cog
+with open("_docs/install-via-pipx.txt") as f:
+    cog.out("```\n")
+    for line in f:
+        cog.out(line)
+    cog.out("```\n")
+]]] -->
 ```
 pipx install issue-expander
 ```
+<!-- [[[end]]] -->
 
 and pipx installs issue-expander into its own little area, just for you, where you don't have to worry about it messing with any system-wide or even user-wide Python dependencies.
 
 If you want to do something different, issue-expander is available on PyPI. Go hogwild.
+
+## Development
+
+There are a lot of ways to set up a development environment for a Python application.  This is one of them.
+
+Before you follow these steps, make sure Python 3 is installed.
+
+1. Clone the issue-expander repository.
+<!-- [[[cog
+import cog
+with open("_docs/devclone.txt") as f:
+    cog.out("```\n")
+    for line in f:
+        cog.out(line)
+    cog.out("```\n")
+]]] -->
+```
+git clone https://github.com/adamwolf/issue-expander.git
+```
+<!-- [[[end]]] -->
+
+2. Create a virtual environment and activate it.
+
+<!-- [[[cog
+import cog
+with open("_docs/devvenv.txt") as f:
+    cog.out("```\n")
+    for line in f:
+        cog.out(line)
+    cog.out("```\n")
+]]] -->
+```
+cd issue-expander
+python3 -m venv venv
+source venv/bin/activate
+```
+<!-- [[[end]]] -->
+
+3. Install the package in editable mode (with development extras).
+<!-- [[[cog
+import cog
+with open("_docs/devinstall.txt") as f:
+    cog.out("```\n")
+    for line in f:
+        cog.out(line)
+    cog.out("```\n")
+]]] -->
+```
+pip install -e .[dev]
+```
+<!-- [[[end]]] -->
+
+4. Make sure you can run the tests.
+<!-- [[[cog
+import cog
+with open("_docs/devtest.txt") as f:
+    cog.out("```\n")
+    for line in f:
+        cog.out(line)
+    cog.out("```\n")
+]]] -->
+```
+pytest
+```
+<!-- [[[end]]] -->
+
+5. Make sure you can run the linter.
+<!-- [[[cog
+import cog
+with open("_docs/devlint.txt") as f:
+    cog.out("```\n")
+    for line in f:
+        cog.out(line)
+    cog.out("```\n")
+]]] -->
+```
+pre-commit run --all-files
+```
+<!-- [[[end]]] -->
+
+At this point, you should be able to make changes to the code.
+
+# Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -30,6 +30,16 @@ dependencies = [
     ]
 dynamic = ["readme"]
 
+[project.optional-dependencies]
+dev = [
+    "tox",
+    "pre-commit",
+    "pytest",
+    "responses",
+    "coverage[toml]",
+    "cogapp"
+]
+
 [project.urls]
 Homepage = "https://www.github.com/adamwolf/issue-expander"
 Issues = "https://www.github.com/adamwolf/issue-expander/issues"
