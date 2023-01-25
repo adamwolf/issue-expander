@@ -20,10 +20,10 @@ This project is not yet stable in any way and makes absolutely no guarantees abo
 
 <!-- [[[cog
 import cog
-from issue_expander import issue_expander
+from issue_expander import expander
 from click.testing import CliRunner
 runner = CliRunner()
-result = runner.invoke(issue_expander.cli, ["--help"])
+result = runner.invoke(expander.cli, ["--help"])
 help = result.output.replace("Usage: cli", "Usage: issue-expander")
 cog.out(
     "```\n{}\n```".format(help)

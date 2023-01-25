@@ -1,6 +1,6 @@
 import pytest
 
-from issue_expander.issue_expander import getIssue
+from issue_expander.expander import getIssue
 
 
 @pytest.fixture(autouse=True)

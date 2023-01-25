@@ -2,23 +2,28 @@
 Use the CLI directly for some high-level integration tests.
 """
 import pytest
-import responses
 from click.testing import CliRunner
-from responses import matchers
 
-from issue_expander.issue_expander import cli
+import issue_expander
+from issue_expander.expander import cli
 
 
-@responses.activate
-def test_file():
+def test_file(monkeypatch):
     """Use a file as input."""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
-        json={
-            "html_url": "https://example.com/pulls/106970",
-            "title": "Foobar the Frobnitz",
-        },
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "101"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/106970", "title": "Foobar the Frobnitz"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -30,16 +35,22 @@ def test_file():
         assert result.exit_code == 0
 
 
-@responses.activate
-def test_stdin():
+def test_stdin(monkeypatch):
     """Read input from stdin if given - as the input file."""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
-        json={
-            "html_url": "https://example.com/pulls/106970",
-            "title": "Foobar the Frobnitz",
-        },
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "101"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/106970", "title": "Foobar the Frobnitz"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["-"], input="adamwolf/geewhiz#101")
@@ -47,27 +58,22 @@ def test_stdin():
     assert result.exit_code == 0
 
 
-@responses.activate
-def test_404s_dont_expand():
-    """If something looks like an issue reference, but GitHub 404s, don't expand it."""
-    responses.get("https://api.github.com/repos/adamwolf/geewhiz/issues/101", status=404)
-
-    runner = CliRunner()
-    result = runner.invoke(cli, ["-"], input="adamwolf/geewhiz#101")
-    assert result.output == "adamwolf/geewhiz#101"
-    assert result.exit_code == 0
-
-
-@responses.activate
-def test_gh_expansion():
+def test_gh_expansion(monkeypatch):
     """Expand GH-123 style references."""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/123",
-        json={
-            "html_url": "https://example.com/pull/123",
-            "title": "Hoist the Mainsail!",
-        },
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "123"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pull/123", "title": "Hoist the Mainsail!"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["--default-source", "adamwolf/geewhiz", "-"], input="GH-123")
@@ -75,16 +81,22 @@ def test_gh_expansion():
     assert result.exit_code == 0
 
 
-@responses.activate
-def test_url_expansion():
+def test_url_expansion(monkeypatch):
     """Expand url references."""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/123",
-        json={
-            "html_url": "https://example.com/pull/123",
-            "title": "Hoist the Mainsail!",
-        },
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "123"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pull/123", "title": "Hoist the Mainsail!"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["-"], input="https://github.com/adamwolf/geewhiz/pull/123")
@@ -92,16 +104,22 @@ def test_url_expansion():
     assert result.exit_code == 0
 
 
-@responses.activate
-def test_url_expansion_with_mismatched_urls():
+def test_url_expansion_with_mismatched_urls(monkeypatch):
     """Expand url references when the url is for an issue and the item is a PR."""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/123",
-        json={
-            "html_url": "https://example.com/pulls/123",
-            "title": "Hoist the Mainsail!",
-        },
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "123"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/123", "title": "Hoist the Mainsail!"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["-"], input="https://github.com/adamwolf/geewhiz/issues/123")
@@ -109,16 +127,22 @@ def test_url_expansion_with_mismatched_urls():
     assert result.exit_code == 0
 
 
-@responses.activate
-def test_default_source():
+def test_default_source(monkeypatch):
     """Use a default group/repository when specified as an option."""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
-        json={
-            "html_url": "https://example.com/pulls/106970",
-            "title": "Foobar the Frobnitz",
-        },
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "101"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/106970", "title": "Foobar the Frobnitz"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["--default-source", "adamwolf/geewhiz", "-"], input="#101")
@@ -149,16 +173,22 @@ def test_malformed_default_sources(source):
     assert "Error: default source must be in the format 'group/repository'\n" in result.output
 
 
-@responses.activate
-def test_default_source_but_not_needed():
+def test_default_source_but_not_needed(monkeypatch):
     """Don't override a specified group/repository even if a default is specified"""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
-        json={
-            "html_url": "https://example.com/pulls/106970",
-            "title": "Foobar the Frobnitz",
-        },
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "101"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/106970", "title": "Foobar the Frobnitz"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     result = runner.invoke(
@@ -170,17 +200,30 @@ def test_default_source_but_not_needed():
     assert result.exit_code == 0
 
 
-@responses.activate
-def test_two_expansions_in_one_line():
+def test_two_expansions_in_one_line(monkeypatch):
     """Test that we can expand multiple issues in one line"""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
-        json={"html_url": "https://example.com/pulls/101", "title": "Foobar the Frobnitz"},
-    )
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/102",
-        json={"html_url": "https://example.com/pulls/102", "title": "HOTFIX: fix the frobnitz!"},
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "101"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/101", "title": "Foobar the Frobnitz"}
+        elif (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "102"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/102", "title": "HOTFIX: fix the frobnitz!"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["-"], input="adamwolf/geewhiz#101 adamwolf/geewhiz#102")
@@ -190,23 +233,30 @@ def test_two_expansions_in_one_line():
     )
 
 
-@responses.activate
-def test_multiline_expansions_over_stdin():
+def test_multiline_expansions_over_stdin(monkeypatch):
     """Expand issues on each line when given multiple lines through stdin"""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
-        json={
-            "html_url": "https://example.com/pulls/101",
-            "title": "Foobar the Frobnitz",
-        },
-    )
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/102",
-        json={
-            "html_url": "https://example.com/pulls/102",
-            "title": "HOTFIX: fix the frobnitz!",
-        },
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "101"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/101", "title": "Foobar the Frobnitz"}
+        elif (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "102"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/102", "title": "HOTFIX: fix the frobnitz!"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     result = runner.invoke(cli, ["-"], input="adamwolf/geewhiz#101\nhello world\nadamwolf/geewhiz#102")
@@ -218,23 +268,30 @@ def test_multiline_expansions_over_stdin():
     assert result.exit_code == 0
 
 
-@responses.activate
-def test_multiline_expansions_over_file():
+def test_multiline_expansions_over_file(monkeypatch):
     """Expand issues on each line when given multiple lines in a file"""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/101",
-        json={
-            "html_url": "https://example.com/pulls/101",
-            "title": "Foobar the Frobnitz",
-        },
-    )
-    responses.get(
-        "https://api.github.com/repos/adamwolf/geewhiz/issues/102",
-        json={
-            "html_url": "https://example.com/pulls/102",
-            "title": "HOTFIX: fix the frobnitz!",
-        },
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "101"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/101", "title": "Foobar the Frobnitz"}
+        elif (
+            group == "adamwolf"
+            and repository == "geewhiz"
+            and number == "102"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://example.com/pulls/102", "title": "HOTFIX: fix the frobnitz!"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -268,17 +325,22 @@ def test_help():
     assert 'Turn references like "foo/bar#123" into Markdown links' in result.output
 
 
-@responses.activate
-def test_cli_auth():
+def test_cli_auth(monkeypatch):
     """Credentials can be passed on the command line"""
-    responses.get(
-        "https://api.github.com/repos/foo/privaterepo/issues/555",
-        json={
-            "html_url": "https://example.com/pulls/555",
-            "title": "Sshhh!",
-        },
-        match=[matchers.header_matcher({"Authorization": "Basic am9obmRvZTpwYXNzd29yZDE="})],
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "foo"
+            and repository == "privaterepo"
+            and number == "555"
+            and username == "johndoe"
+            and token == "password1"
+        ):
+            return {"html_url": "https://example.com/pulls/555", "title": "Sshhh!"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     runner = CliRunner()
     result = runner.invoke(

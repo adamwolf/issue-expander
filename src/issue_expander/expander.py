@@ -1,9 +1,13 @@
+import json
 import re
+import ssl
 import sys
 from functools import lru_cache, partial
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
+import certifi
 import click
-import requests
 
 # These regexes are really particular, at the moment..
 regexes = [
@@ -20,15 +24,28 @@ def getIssue(group: str, repository: str, number: int, username: [str], token: [
     # What to do with bad credentials?
 
     url = f"https://api.github.com/repos/{group}/{repository}/issues/{number}"
-    if username and token:
-        auth = (username, token)
-    else:
-        auth = None
-    req = requests.get(url, auth=auth)
-    if not req.ok:
+
+    headers = {"Accept": "application/json"}
+    if token:
+        headers["Authorization"] = f"Bearer: {token}"
+
+    request = Request(url, headers=headers)
+
+    certifi_context = ssl.create_default_context(cafile=certifi.where())
+
+    try:
+        with urlopen(request, context=certifi_context) as response:
+            j = json.load(response)
+            return j
+    except HTTPError as e:
+        if e.code == 403:  # "rate limit exceeded"
+            message = "Unable to look up issue due to rate limit error."
+            if not token:
+                message += " Try providing a token with --token."
+            print(message, file=sys.stderr)
+    except json.JSONDecodeError:
+        print(f"Unable to parse response from {url}", file=sys.stderr)
         return None
-    else:
-        return req.json()
 
 
 def substituteMatch(match, default_group, default_repository, username, token):
@@ -59,7 +76,6 @@ def expandRefsToMarkdown(
     default_group: object = None,
     default_repository: object = None,
 ) -> str:
-
     substituter = partial(
         substituteMatch,
         default_group=default_group,
