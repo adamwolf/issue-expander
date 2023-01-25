@@ -1,12 +1,9 @@
-import re
-
 import pytest
-import responses
 
-from issue_expander.issue_expander import expandRefsToMarkdown
+import issue_expander
+from issue_expander.expander import expandRefsToMarkdown
 
 
-@responses.activate
 @pytest.mark.parametrize(
     "nonexpansion",
     [
@@ -23,17 +20,18 @@ from issue_expander.issue_expander import expandRefsToMarkdown
         "https://github.org/adamwolf/issue-expander/pull/23",
     ],
 )
-def test_url_nonexpansion(nonexpansion):
+def test_url_nonexpansion(nonexpansion, monkeypatch):
     """Many github urls should not be expanded."""
-    rsp = responses.get(re.compile("http.*"))
+
+    def mockIssue(group, repository, number, username, token):
+        raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     expansion = expandRefsToMarkdown(nonexpansion)
     assert expansion == nonexpansion
 
-    assert rsp.call_count == 0
 
-
-@responses.activate
 @pytest.mark.parametrize(
     "input_text,expectation",
     (
@@ -47,15 +45,23 @@ def test_url_nonexpansion(nonexpansion):
         ),
     ),
 )
-def test_url_expansion(input_text, expectation):
+def test_url_expansion(input_text, expectation, monkeypatch):
     """A certain format of GitHub urls should be expanded."""
-    responses.get(
-        "https://api.github.com/repos/adamwolf/faux-expander/issues/23",
-        json={
-            "html_url": "https://github.com/adamwolf/faux-expander/issues/23",
-            "title": "Detect url references",
-        },
-    )
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "adamwolf"
+            and repository == "faux-expander"
+            and number == "23"
+            and username is None
+            and token is None
+        ):
+            return {
+                "html_url": "https://github.com/adamwolf/faux-expander/issues/23",
+                "title": "Detect url references",
+            }
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     expansion = expandRefsToMarkdown(input_text)
     assert expansion == expectation

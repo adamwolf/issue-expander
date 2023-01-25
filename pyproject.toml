@@ -26,7 +26,7 @@ classifiers = [
 requires-python = ">=3.7"
 dependencies = [
     "Click",
-    "requests",
+    "certifi",
     ]
 dynamic = ["readme"]
 
@@ -35,7 +35,6 @@ dev = [
     "tox",
     "pre-commit",
     "pytest",
-    "responses",
     "coverage[toml]",
     "cogapp",
     "scriv"
@@ -50,7 +49,7 @@ Issues = "https://www.github.com/adamwolf/issue-expander/issues"
 readme = {file = ["README.md"], content-type = "text/markdown"}
 
 [project.scripts]
-issue-expander = "issue_expander.issue_expander:cli"
+issue-expander = "issue_expander.expander:cli"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

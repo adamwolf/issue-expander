@@ -1,12 +1,9 @@
-import re
-
 import pytest
-import responses
 
-from issue_expander.issue_expander import expandRefsToMarkdown
+import issue_expander
+from issue_expander.expander import expandRefsToMarkdown
 
 
-@responses.activate
 @pytest.mark.parametrize(
     "input_text,expectation",
     (
@@ -18,30 +15,47 @@ from issue_expander.issue_expander import expandRefsToMarkdown
         ("\n\nGH-100\n", "\n\n[Example Issue #100](https://github.com/foo/bar/issues/100)\n"),
     ),
 )
-def test_gh_issue_expansion(input_text, expectation):
-    """Issue references should be expanded"""
-    responses.get(
-        "https://api.github.com/repos/foo/bar/issues/100",
-        json={
-            "html_url": "https://github.com/foo/bar/issues/100",
-            "title": "Example Issue",
-        },
-    )
+def test_gh_issue_expansion(input_text, expectation, monkeypatch):
+    """Issue references like GH-32 should be expanded"""
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "foo"
+            and repository == "bar"
+            and number == "100"
+            and username is None
+            and token is None
+        ):
+            return {"html_url": "https://github.com/foo/bar/issues/100", "title": "Example Issue"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     expansion = expandRefsToMarkdown(input_text, default_group="foo", default_repository="bar")
     assert expansion == expectation
 
 
-@responses.activate
 @pytest.mark.parametrize(
     "nonexpansion",
     ["GH 100", "G H-100", "G-H-100", "GH- 100", "GH-#100", "GH_100", "GGHH-100", "100-GH", "UGH-100"],
 )
-def test_gh_nonexpansion(nonexpansion):
+def test_gh_nonexpansion(nonexpansion, monkeypatch):
     """Many things with GH in them should not be expanded."""
-    rsp = responses.get(re.compile("http.*"))
+
+    def mockIssue(group, repository, number, username, token):
+        if (
+            group == "foo"
+            and repository == "privaterepo"
+            and number == "555"
+            and username == "johndoe"
+            and token == "password1"
+        ):
+            return {"html_url": "https://example.com/pulls/555", "title": "Sshhh!"}
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
     expansion = expandRefsToMarkdown(nonexpansion, default_group="foo", default_repository="bar")
     assert expansion == nonexpansion
-
-    assert rsp.call_count == 0
