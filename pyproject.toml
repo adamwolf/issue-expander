@@ -64,6 +64,7 @@ line-length = 108
 parallel = true
 branch = true
 source = ["issue_expander"]
+omit = ["src/issue_expander/__main__.py"]
 
 [tool.coverage.paths]
 source = ["src", ".tox/py*/**/site-packages"]
