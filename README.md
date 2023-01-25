@@ -96,6 +96,8 @@ pipx install issue-expander
 
 and pipx installs issue-expander into its own little area, just for you, where you don't have to worry about it messing with any system-wide or even user-wide Python dependencies.
 
+If you want to generate a binary that can run issue-expander without needing Python to be installed, see [BUILDING.md](BUILDING.md).
+
 If you want to do something different, issue-expander is available on PyPI. Go hogwild.
 
 ## Development
