@@ -35,6 +35,7 @@ There are lots of cool ways to write and edit code these days, like [Replit](htt
 * Make a branch
 * Make your changes
 * Check your changes (linting, tests, etc.)
+* Draft a changelog entry using `scriv create` (and edit it!)
 * Commit your changes
 * Push your changes
 * Open a pull request

@@ -37,7 +37,8 @@ dev = [
     "pytest",
     "responses",
     "coverage[toml]",
-    "cogapp"
+    "cogapp",
+    "scriv"
 ]
 
 [project.urls]
@@ -78,5 +79,8 @@ addopts = [
     "--import-mode=importlib",
 ]
 pythonpath = "src"
+
+[tool.scriv]
+format = "md"
 
 # flake8 config is in tox.ini, as it can't yet be here
