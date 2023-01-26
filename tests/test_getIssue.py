@@ -14,7 +14,7 @@ def test_getIssue_with_404(monkeypatch):
         raise HTTPError("http://example.com", 404, "Not Found", {}, io.BytesIO(b""))
 
     monkeypatch.setattr(issue_expander.expander, "urlopen", mock_urlopen)
-    assert getIssue("adamwolf", "issue-expander", "1", None, None) is None
+    assert getIssue("adamwolf", "issue-expander", "1", None) is None
 
 
 def test_getIssue_puts_token_in_headers():
@@ -24,7 +24,7 @@ def test_getIssue_puts_token_in_headers():
         "issue_expander.expander.urlopen",
         return_value=io.BytesIO(json.dumps({"html_url": "foo", "title": "bar"}).encode("utf-8")),
     ) as mock_urlopen:
-        assert getIssue("adamwolf", "issue-expander", "1", None, "frobnitz") == {
+        assert getIssue("adamwolf", "issue-expander", "1", "frobnitz") == {
             "html_url": "foo",
             "title": "bar",
         }
@@ -42,7 +42,7 @@ def test_getIssue_with_403_without_token(monkeypatch, capsys):
         raise HTTPError("http://example.com", 403, "Rate limit exceeded.", {}, io.BytesIO(b""))
 
     monkeypatch.setattr(issue_expander.expander, "urlopen", mock_urlopen)
-    assert getIssue("adamwolf", "issue-expander", "1", None, None) is None
+    assert getIssue("adamwolf", "issue-expander", "1", None) is None
     captured = capsys.readouterr()
     assert (
         captured.err
@@ -59,7 +59,7 @@ def test_getIssue_with_403_with_token(monkeypatch, capsys):
         raise HTTPError("http://example.com", 403, "Rate limit exceeded.", {}, io.BytesIO(b"foo   "))
 
     monkeypatch.setattr(issue_expander.expander, "urlopen", mock_urlopen)
-    assert getIssue("adamwolf", "issue-expander", "1", None, "imatoken") is None
+    assert getIssue("adamwolf", "issue-expander", "1", "imatoken") is None
     captured = capsys.readouterr()
     assert captured.err == "Unable to look up issue due to rate limit error.\n"
 
@@ -71,7 +71,7 @@ def test_getIssue_with_malformed_json(monkeypatch, capsys):
         raise json.JSONDecodeError("msg", "doc", 0)
 
     monkeypatch.setattr(issue_expander.expander, "urlopen", mock_urlopen)
-    assert getIssue("adamwolf", "issue-expander", "1", None, None) is None
+    assert getIssue("adamwolf", "issue-expander", "1", None) is None
 
     captured = capsys.readouterr()
 
@@ -88,7 +88,7 @@ def test_getIssue_happy_path():
         "issue_expander.expander.urlopen",
         return_value=io.BytesIO(json.dumps({"html_url": "foo", "title": "bar"}).encode("utf-8")),
     ) as mock_urlopen:
-        assert getIssue("adamwolf", "issue-expander", "1", None, None) == {
+        assert getIssue("adamwolf", "issue-expander", "1", None) == {
             "html_url": "foo",
             "title": "bar",
         }

@@ -39,25 +39,20 @@ Usage: issue-expander [OPTIONS] FILE
   issue-expander works for references to issues and to pull requests.
 
   References are only expanded if they are found at GitHub.  To expand
-  references from private repositories, you'll need to pass your GitHub username
-  and token.  This can be done via environment variables or via command line
-  options.
+  references from private repositories, you'll need to pass your GitHub token.
+  This can be done via environment variables or via command line options.
 
   To interpret references like `#1138` as `adamwolf/issue-expander#1138`,
   specify defaults using `--default-source`.
 
 Options:
-  --default-source USER/REPO      Use USER/REPO when not specified in issue
-                                  reference. (Example: "adamwolf/issue-
-                                  expander")
-  -u, --github-username USERNAME  GitHub username for looking up issue
-                                  references. You can use the environment
-                                  variable ISSUE_EXPANDER_GITHUB_USERNAME.
-  -p, --github-token TOKEN        GitHub token for looking up issue references.
-                                  You may want to use the environment variable
-                                  ISSUE_EXPANDER_GITHUB_TOKEN instead.
-  --version                       Show the version and exit.
-  --help                          Show this message and exit.
+  --default-source USER/REPO  Use USER/REPO when not specified in issue
+                              reference. (Example: "adamwolf/issue-expander")
+  -p, --github-token TOKEN    GitHub token for looking up issue references. You
+                              may want to use the environment variable
+                              ISSUE_EXPANDER_GITHUB_TOKEN instead.
+  --version                   Show the version and exit.
+  --help                      Show this message and exit.
 
 ```
 <!-- [[[end]]] -->

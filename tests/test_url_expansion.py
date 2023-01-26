@@ -23,7 +23,7 @@ from issue_expander.expander import expandRefsToMarkdown
 def test_url_nonexpansion(nonexpansion, monkeypatch):
     """Many github urls should not be expanded."""
 
-    def mockIssue(group, repository, number, username, token):
+    def mockIssue(group, repository, number, token):
         raise ValueError("Unexpected request")
 
     monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
@@ -48,14 +48,8 @@ def test_url_nonexpansion(nonexpansion, monkeypatch):
 def test_url_expansion(input_text, expectation, monkeypatch):
     """A certain format of GitHub urls should be expanded."""
 
-    def mockIssue(group, repository, number, username, token):
-        if (
-            group == "adamwolf"
-            and repository == "faux-expander"
-            and number == "23"
-            and username is None
-            and token is None
-        ):
+    def mockIssue(group, repository, number, token):
+        if group == "adamwolf" and repository == "faux-expander" and number == "23" and token is None:
             return {
                 "html_url": "https://github.com/adamwolf/faux-expander/issues/23",
                 "title": "Detect url references",

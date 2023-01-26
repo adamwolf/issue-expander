@@ -15,14 +15,8 @@ from issue_expander.expander import expandRefsToMarkdown
 def test_number_issue_expansion(input_text, expectation, monkeypatch):
     """Issue references should be expanded"""
 
-    def mockIssue(group, repository, number, username, token):
-        if (
-            group == "foo"
-            and repository == "bar"
-            and number == "100"
-            and username is None
-            and token is None
-        ):
+    def mockIssue(group, repository, number, token):
+        if group == "foo" and repository == "bar" and number == "100" and token is None:
             return {
                 "html_url": "https://github.com/foo/bar/issues/100",
                 "title": "Example Issue",
@@ -51,7 +45,7 @@ def test_number_issue_expansion(input_text, expectation, monkeypatch):
 def test_number_nonexpansion(nonexpansion, monkeypatch):
     """Many things with numbers in them should not be expanded."""
 
-    def mockIssue(group, repository, number, username, token):
+    def mockIssue(group, repository, number, token):
         raise ValueError("Unexpected request")
 
     monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
