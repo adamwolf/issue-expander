@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "issue_expander"
-version = "0.1.11.dev0"
+version = "0.1.12"
 authors = [{name = "Adam Wolf", email = "adamwolf@feelslikeburning.com"}]
 license = {text = "MIT"}
 description = "Expand GitHub issue references into Markdown links"
