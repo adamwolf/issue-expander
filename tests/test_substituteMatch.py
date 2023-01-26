@@ -18,7 +18,7 @@ def test_substituteMatch_with_group_but_no_repo(monkeypatch):
     assert match.group("group") == "adamwolf"
     assert match.group("number") == "101"
 
-    assert substituteMatch(match, "defaultgroup", None, None, None) == ("adamwolf/geewhiz#101")
+    assert substituteMatch(match, "defaultgroup", None, None) == ("adamwolf/geewhiz#101")
 
 
 def test_substituteMatch_with_no_issue_found_online(monkeypatch):
@@ -32,4 +32,4 @@ def test_substituteMatch_with_no_issue_found_online(monkeypatch):
     match = re.match(r"\bGH-(?P<number>\d+)", "GH-101")
     assert match
 
-    assert substituteMatch(match, "defaultgroup", "adamwolf", "bogus", None) == ("GH-101")
+    assert substituteMatch(match, "defaultgroup", "bogus", None) == "GH-101"
