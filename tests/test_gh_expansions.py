@@ -18,15 +18,15 @@ from issue_expander.expander import expandRefsToMarkdown
 def test_gh_issue_expansion(input_text, expectation, monkeypatch):
     """Issue references like GH-32 should be expanded"""
 
-    def mockIssue(group, repository, number, token):
-        if group == "foo" and repository == "bar" and number == "100" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "foo" and repository == "bar" and number == "100" and token is None:
             return {"html_url": "https://github.com/foo/bar/issues/100", "title": "Example Issue"}
         else:
             raise ValueError("Unexpected request")
 
     monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
-    expansion = expandRefsToMarkdown(input_text, default_group="foo", default_repository="bar")
+    expansion = expandRefsToMarkdown(input_text, default_owner="foo", default_repository="bar")
     assert expansion == expectation
 
 
@@ -37,13 +37,13 @@ def test_gh_issue_expansion(input_text, expectation, monkeypatch):
 def test_gh_nonexpansion(nonexpansion, monkeypatch):
     """Many things with GH in them should not be expanded."""
 
-    def mockIssue(group, repository, number, token):
-        if group == "foo" and repository == "privaterepo" and number == "555" and token == "password1":
+    def mockIssue(owner, repository, number, token):
+        if owner == "foo" and repository == "privaterepo" and number == "555" and token == "password1":
             return {"html_url": "https://example.com/pulls/555", "title": "Sshhh!"}
         else:
             raise ValueError("Unexpected request")
 
     monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
-    expansion = expandRefsToMarkdown(nonexpansion, default_group="foo", default_repository="bar")
+    expansion = expandRefsToMarkdown(nonexpansion, default_owner="foo", default_repository="bar")
     assert expansion == nonexpansion

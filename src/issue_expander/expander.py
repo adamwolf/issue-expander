@@ -11,27 +11,27 @@ import click
 
 # These regexes are really particular, at the moment...
 # When adding regexes, take care to only match if you should--this may mean negative look-ahead and -behind assertions
-# and name the group number, group, and repository, but append _ and a unique suffix.
+# and name the group number, owner, and repository, but append _ and a unique suffix.
 
 # Python's re module doesn't support regexes containing multiple named groups with the same name.
 
 # These regexes are later combined into a megaregex.
 named_regexes = [
     # like https://github.com/foo/bar/issues/123
-    r"https://github.com/(?P<group_x>[a-zA-Z0-9.-]+)/(?P<repository_x>[a-zA-Z0-9.-]+)/(issues|pull)/(?P<number_x>\d+)",
+    r"https://github.com/(?P<owner_x>[a-zA-Z0-9.-]+)/(?P<repository_x>[a-zA-Z0-9.-]+)/(issues|pull)/(?P<number_x>\d+)",
     r"(?<![a-zA-Z0-9#-])#(?P<number_y>\d+)(?![a-zA-Z0-9#])",  # like #123
     r"\bGH-(?P<number_z>\d+)",  # like GH-123
-    r"(?P<group_n>[a-zA-Z0-9.-]+)/(?P<repository_n>[a-zA-Z0-9.-]+)#(?P<number_n>\d+)",  # like foo/bar#123
+    r"(?P<owner_n>[a-zA-Z0-9.-]+)/(?P<repository_n>[a-zA-Z0-9.-]+)#(?P<number_n>\d+)",  # like foo/bar#123
 ]
 
 megaregex = re.compile("|".join(named_regexes))
 
 
 @lru_cache()
-def getIssue(group: str, repository: str, number: int, token: [str]) -> [dict]:
+def getIssue(owner: str, repository: str, number: int, token: [str]) -> [dict]:
     # What to do with bad credentials?
 
-    url = f"https://api.github.com/repos/{group}/{repository}/issues/{number}"
+    url = f"https://api.github.com/repos/{owner}/{repository}/issues/{number}"
 
     headers = {"Accept": "application/json"}
     if token:
@@ -56,25 +56,25 @@ def getIssue(group: str, repository: str, number: int, token: [str]) -> [dict]:
         return None
 
 
-def substituteMatch(match, default_group, default_repository, token):
-    group = None
+def substituteMatch(match, default_owner, default_repository, token):
+    owner = None
     repository = None
     number = None
 
     for name, value in match.groupdict().items():
         if name.startswith("number_") and value is not None:
             number = value
-        elif name.startswith("group_") and value is not None:
-            group = value
+        elif name.startswith("owner_") and value is not None:
+            owner = value
         elif name.startswith("repository_") and value is not None:
             repository = value
 
-    if not (group and repository):
-        group = default_group
+    if not (owner and repository):
+        owner = default_owner
         repository = default_repository
 
-    if group and repository:
-        issue = getIssue(group, repository, number, token)
+    if owner and repository:
+        issue = getIssue(owner, repository, number, token)
         if issue:
             html_url = issue["html_url"]
             title = issue["title"]
@@ -87,12 +87,12 @@ def substituteMatch(match, default_group, default_repository, token):
 def expandRefsToMarkdown(
     text: str,
     token: object = None,
-    default_group: object = None,
+    default_owner: object = None,
     default_repository: object = None,
 ) -> str:
     substituter = partial(
         substituteMatch,
-        default_group=default_group,
+        default_owner=default_owner,
         default_repository=default_repository,
         token=token,
     )
@@ -139,21 +139,20 @@ def cli(input, github_token=None, default_source=None):
 
     out = []
 
-    default_group = None
+    default_owner = None
     default_repository = None
 
     if default_source is not None:
-        # default_group, default_repository = default_source.split("/")
-        # get group/repository from default_source using a regex
-        match = re.fullmatch(r"(?P<group>[a-zA-Z0-9.-]+)/(?P<repository>[a-zA-Z0-9.-]+)", default_source)
+        # get owner/repository from default_source using a regex
+        match = re.fullmatch(r"(?P<owner>[a-zA-Z0-9.-]+)/(?P<repository>[a-zA-Z0-9.-]+)", default_source)
         if match:
-            default_group = match.group("group")
+            default_owner = match.group("owner")
             default_repository = match.group("repository")
 
-        if not (default_group and default_repository):
-            print("Error: default source must be in the format 'group/repository'", file=sys.stderr)
+        if not (default_owner and default_repository):
+            print("Error: default source must be in the format 'owner/repository'", file=sys.stderr)
             sys.exit(1)
 
     for line in input:
-        out = expandRefsToMarkdown(line, github_token, default_group, default_repository)
+        out = expandRefsToMarkdown(line, github_token, default_owner, default_repository)
         print(out, end="")
