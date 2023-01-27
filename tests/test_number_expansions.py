@@ -15,8 +15,8 @@ from issue_expander.expander import expandRefsToMarkdown
 def test_number_issue_expansion(input_text, expectation, monkeypatch):
     """Issue references should be expanded"""
 
-    def mockIssue(group, repository, number, token):
-        if group == "foo" and repository == "bar" and number == "100" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "foo" and repository == "bar" and number == "100" and token is None:
             return {
                 "html_url": "https://github.com/foo/bar/issues/100",
                 "title": "Example Issue",
@@ -26,7 +26,7 @@ def test_number_issue_expansion(input_text, expectation, monkeypatch):
 
     monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
-    expansion = expandRefsToMarkdown(input_text, default_group="foo", default_repository="bar")
+    expansion = expandRefsToMarkdown(input_text, default_owner="foo", default_repository="bar")
     assert expansion == expectation
 
 
@@ -45,10 +45,10 @@ def test_number_issue_expansion(input_text, expectation, monkeypatch):
 def test_number_nonexpansion(nonexpansion, monkeypatch):
     """Many things with numbers in them should not be expanded."""
 
-    def mockIssue(group, repository, number, token):
+    def mockIssue(owner, repository, number, token):
         raise ValueError("Unexpected request")
 
     monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
 
-    expansion = expandRefsToMarkdown(nonexpansion, default_group="foo", default_repository="bar")
+    expansion = expandRefsToMarkdown(nonexpansion, default_owner="foo", default_repository="bar")
     assert expansion == nonexpansion

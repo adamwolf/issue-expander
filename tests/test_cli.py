@@ -11,8 +11,8 @@ from issue_expander.expander import cli
 def test_file(monkeypatch):
     """Use a file as input."""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
             return {"html_url": "https://example.com/pulls/106970", "title": "Foobar the Frobnitz"}
         else:
             raise ValueError("Unexpected request")
@@ -32,8 +32,8 @@ def test_file(monkeypatch):
 def test_stdin(monkeypatch):
     """Read input from stdin if given - as the input file."""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
             return {"html_url": "https://example.com/pulls/106970", "title": "Foobar the Frobnitz"}
         else:
             raise ValueError("Unexpected request")
@@ -49,8 +49,8 @@ def test_stdin(monkeypatch):
 def test_gh_expansion(monkeypatch):
     """Expand GH-123 style references."""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "123" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "123" and token is None:
             return {"html_url": "https://example.com/pull/123", "title": "Hoist the Mainsail!"}
         else:
             raise ValueError("Unexpected request")
@@ -66,8 +66,8 @@ def test_gh_expansion(monkeypatch):
 def test_url_expansion(monkeypatch):
     """Expand url references."""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "123" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "123" and token is None:
             return {"html_url": "https://example.com/pull/123", "title": "Hoist the Mainsail!"}
         else:
             raise ValueError("Unexpected request")
@@ -83,8 +83,8 @@ def test_url_expansion(monkeypatch):
 def test_url_expansion_with_mismatched_urls(monkeypatch):
     """Expand url references when the url is for an issue and the item is a PR."""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "123" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "123" and token is None:
             return {"html_url": "https://example.com/pulls/123", "title": "Hoist the Mainsail!"}
         else:
             raise ValueError("Unexpected request")
@@ -98,10 +98,10 @@ def test_url_expansion_with_mismatched_urls(monkeypatch):
 
 
 def test_default_source(monkeypatch):
-    """Use a default group/repository when specified as an option."""
+    """Use a default owner/repository when specified as an option."""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
             return {"html_url": "https://example.com/pulls/106970", "title": "Foobar the Frobnitz"}
         else:
             raise ValueError("Unexpected request")
@@ -134,14 +134,14 @@ def test_malformed_default_sources(source):
     runner = CliRunner()
     result = runner.invoke(cli, ["--default-source", source, "-"], input="#101")
     assert result.exit_code == 1
-    assert "Error: default source must be in the format 'group/repository'\n" in result.output
+    assert "Error: default source must be in the format 'owner/repository'\n" in result.output
 
 
 def test_default_source_but_not_needed(monkeypatch):
-    """Don't override a specified group/repository even if a default is specified"""
+    """Don't override a specified owner/repository even if a default is specified"""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
             return {"html_url": "https://example.com/pulls/106970", "title": "Foobar the Frobnitz"}
         else:
             raise ValueError("Unexpected request")
@@ -161,10 +161,10 @@ def test_default_source_but_not_needed(monkeypatch):
 def test_two_expansions_in_one_line(monkeypatch):
     """Test that we can expand multiple issues in one line"""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
             return {"html_url": "https://example.com/pulls/101", "title": "Foobar the Frobnitz"}
-        elif group == "adamwolf" and repository == "geewhiz" and number == "102" and token is None:
+        elif owner == "adamwolf" and repository == "geewhiz" and number == "102" and token is None:
             return {"html_url": "https://example.com/pulls/102", "title": "HOTFIX: fix the frobnitz!"}
         else:
             raise ValueError("Unexpected request")
@@ -182,10 +182,10 @@ def test_two_expansions_in_one_line(monkeypatch):
 def test_multiline_expansions_over_stdin(monkeypatch):
     """Expand issues on each line when given multiple lines through stdin"""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
             return {"html_url": "https://example.com/pulls/101", "title": "Foobar the Frobnitz"}
-        elif group == "adamwolf" and repository == "geewhiz" and number == "102" and token is None:
+        elif owner == "adamwolf" and repository == "geewhiz" and number == "102" and token is None:
             return {"html_url": "https://example.com/pulls/102", "title": "HOTFIX: fix the frobnitz!"}
         else:
             raise ValueError("Unexpected request")
@@ -205,10 +205,10 @@ def test_multiline_expansions_over_stdin(monkeypatch):
 def test_multiline_expansions_over_file(monkeypatch):
     """Expand issues on each line when given multiple lines in a file"""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
             return {"html_url": "https://example.com/pulls/101", "title": "Foobar the Frobnitz"}
-        elif group == "adamwolf" and repository == "geewhiz" and number == "102" and token is None:
+        elif owner == "adamwolf" and repository == "geewhiz" and number == "102" and token is None:
             return {"html_url": "https://example.com/pulls/102", "title": "HOTFIX: fix the frobnitz!"}
         else:
             raise ValueError("Unexpected request")
@@ -250,8 +250,8 @@ def test_help():
 def test_cli_auth(monkeypatch):
     """Credentials can be passed on the command line"""
 
-    def mockIssue(group, repository, number, token):
-        if group == "foo" and repository == "privaterepo" and number == "555" and token == "password1":
+    def mockIssue(owner, repository, number, token):
+        if owner == "foo" and repository == "privaterepo" and number == "555" and token == "password1":
             return {"html_url": "https://example.com/pulls/555", "title": "Sshhh!"}
         else:
             raise ValueError("Unexpected request")
@@ -271,8 +271,8 @@ def test_cli_auth(monkeypatch):
 def test_404s_dont_expand(monkeypatch):
     """If we get a 404 when looking up an issue, don't expand it."""
 
-    def mockIssue(group, repository, number, token):
-        if group == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
+    def mockIssue(owner, repository, number, token):
+        if owner == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
             return None
         else:
             raise ValueError("Unexpected request")
