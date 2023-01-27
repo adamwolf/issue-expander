@@ -266,3 +266,24 @@ def test_cli_auth(monkeypatch):
     )
     assert result.output == "[Sshhh! #555](https://example.com/pulls/555)"
     assert result.exit_code == 0
+
+
+def test_404s_dont_expand(monkeypatch):
+    """If we get a 404 when looking up an issue, don't expand it."""
+
+    def mockIssue(group, repository, number, token):
+        if group == "adamwolf" and repository == "geewhiz" and number == "101" and token is None:
+            return None
+        else:
+            raise ValueError("Unexpected request")
+
+    monkeypatch.setattr(issue_expander.expander, "getIssue", mockIssue)
+
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        with open("hello.txt", "w") as f:
+            f.write("adamwolf/geewhiz#101")
+
+        result = runner.invoke(cli, ["hello.txt"])
+        assert result.output == "adamwolf/geewhiz#101"
+        assert result.exit_code == 0

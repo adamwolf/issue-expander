@@ -9,14 +9,22 @@ from urllib.request import Request, urlopen
 import certifi
 import click
 
-# These regexes are really particular, at the moment..
-regexes = [
+# These regexes are really particular, at the moment...
+# When adding regexes, take care to only match if you should--this may mean negative look-ahead and -behind assertions
+# and name the group number, group, and repository, but append _ and a unique suffix.
+
+# Python's re module doesn't support regexes containing multiple named groups with the same name.
+
+# These regexes are later combined into a megaregex.
+named_regexes = [
     # like https://github.com/foo/bar/issues/123
-    r"https://github.com/(?P<group>[a-zA-Z0-9.-]+)/(?P<repository>[a-zA-Z0-9.-]+)/(issues|pull)/(?P<number>\d+)",
-    r"(?<![a-zA-Z0-9#-])#(?P<number>\d+)(?![a-zA-Z0-9#])",  # like #123
-    r"\bGH-(?P<number>\d+)",  # like GH-123
-    r"(?P<group>[a-zA-Z0-9.-]+)/(?P<repository>[a-zA-Z0-9.-]+)#(?P<number>\d+)",  # like foo/bar#123
+    r"https://github.com/(?P<group_x>[a-zA-Z0-9.-]+)/(?P<repository_x>[a-zA-Z0-9.-]+)/(issues|pull)/(?P<number_x>\d+)",
+    r"(?<![a-zA-Z0-9#-])#(?P<number_y>\d+)(?![a-zA-Z0-9#])",  # like #123
+    r"\bGH-(?P<number_z>\d+)",  # like GH-123
+    r"(?P<group_n>[a-zA-Z0-9.-]+)/(?P<repository_n>[a-zA-Z0-9.-]+)#(?P<number_n>\d+)",  # like foo/bar#123
 ]
+
+megaregex = re.compile("|".join(named_regexes))
 
 
 @lru_cache()
@@ -49,14 +57,21 @@ def getIssue(group: str, repository: str, number: int, token: [str]) -> [dict]:
 
 
 def substituteMatch(match, default_group, default_repository, token):
-    if "group" in match.groupdict() and "repository" in match.groupdict():
-        group = match.group("group")
-        repository = match.group("repository")
-    else:
+    group = None
+    repository = None
+    number = None
+
+    for name, value in match.groupdict().items():
+        if name.startswith("number_") and value is not None:
+            number = value
+        elif name.startswith("group_") and value is not None:
+            group = value
+        elif name.startswith("repository_") and value is not None:
+            repository = value
+
+    if not (group and repository):
         group = default_group
         repository = default_repository
-
-    number = match.group("number")
 
     if group and repository:
         issue = getIssue(group, repository, number, token)
@@ -87,8 +102,7 @@ def expandRefsToMarkdown(
     # make all the substitutions for this regex at one time,
     # then check that output string with the next regex
 
-    for regex in regexes:
-        out = re.sub(regex, substituter, out)
+    out = re.sub(megaregex, substituter, out)
     return out
 
 
