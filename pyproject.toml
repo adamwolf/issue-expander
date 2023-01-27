@@ -44,6 +44,7 @@ dev = [
 Homepage = "https://www.github.com/adamwolf/issue-expander"
 Issues = "https://www.github.com/adamwolf/issue-expander/issues"
 "Source code" = "https://www.github.com/adamwolf/issue-expander"
+Changelog = "https://www.github.com/adamwolf/issue-expander/blob/main/CHANGELOG.md"
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"], content-type = "text/markdown"}
